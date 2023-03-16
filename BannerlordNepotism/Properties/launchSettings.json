@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Start": {
+      "commandName": "Executable",
+      "executablePath": "$(GameFolder)\\bin\\Win64_Shipping_Client\\Bannerlord.exe",
+      "commandLineArgs": "/singleplayer _MODULES_*Bannerlord.Harmony*BetterExceptionWindow*Bannerlord.ButterLib*Bannerlord.UIExtenderEx*Bannerlord.MBOptionScreen*Native*SandBoxCore*Sandbox*CustomBattle*StoryMode*BirthAndDeath*Nepotism*_MODULES_",
+      "workingDirectory": "$(GameFolder)\\bin\\Win64_Shipping_Client"
+    },
+    "MySetup": {
+      "commandName": "Executable",
+      "executablePath": "$(GameFolder)\\bin\\Win64_Shipping_Client\\Bannerlord.exe",
+      "commandLineArgs": "/singleplayer _MODULES_*Bannerlord.Harmony*BetterExceptionWindow*Bannerlord.ButterLib*Bannerlord.UIExtenderEx*Bannerlord.MBOptionScreen*Native*SandBoxCore*CustomBattle*Sandbox*StoryMode*AnotherAchievementModule*AutoTrader*ArrangeMarriageForFamily*BannerColorPersistence*Bannerlord.Diplomacy*BirthAndDeath*CharacterManager*Cheats*DedicatedCustomServerHelper*DismembermentPlus*FamilyControl*FamilyTree*Multiplayer*Nepotism*OpenSourceArmory*OpenSourceSaddlery*OpenSourceWeaponry*RighteousExecutions*SiegeLoadout*TimeLord*WhereTournaments*WhereTournamentsSelectTournamentPrize*WhereTournamentsLockTrackedPrize*zCulturedStart*zzCharacterCreation*_MODULES_",
+      "workingDirectory": "$(GameFolder)\\bin\\Win64_Shipping_Client"
+    }
+  }
+}

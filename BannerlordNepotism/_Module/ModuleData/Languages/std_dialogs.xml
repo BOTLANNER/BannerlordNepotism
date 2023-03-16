@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+    <tags>
+        <tag language="English" />
+    </tags>
+    <strings>
+        <string id="nepotism_01" text="Join our clan, the family needs you." />
+        <string id="nepotism_02" text="As you wish." />
+        <string id="nepotism_03" text="Join {KINGDOM}, the family needs you." />
+        <string id="nepotism_04" text="We should merge {THEIR_KINGDOM} into {KINGDOM}, for the family." />        
+    </strings>
+</base>

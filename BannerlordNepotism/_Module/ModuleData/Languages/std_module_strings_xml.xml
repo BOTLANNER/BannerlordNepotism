@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+    <tags>
+        <tag language="English" />
+    </tags>
+    <strings>
+        <string id="nepotism_n_01" text="{FAMILY_MEMBER} has joined {CLAN}." />
+        <string id="nepotism_n_02" text="{FAMILY_MEMBER} and {CLAN} has joined {KINGDOM}." />
+        <string id="nepotism_n_03" text="{CLAN} has joined {KINGDOM}." />
+        <string id="nepotism_n_04" text="{THEIR_KINGDOM} has merged into {KINGDOM}." />
+    </strings>
+</base>
