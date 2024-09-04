@@ -41,31 +41,40 @@ namespace BannerlordNepotism
                     {
                         if (kingdom != null && kingdom.Leader != null)
                         {
-                            if (kingdom.Leader.Clan != kingdom.RulingClan)
+                            if (Main.Settings!.PatchMembershipIssues && kingdom.Leader.Clan != kingdom.RulingClan)
                             {
                                 var wrongClan = kingdom.Leader.Clan;
                                 kingdom.Leader.Clan = kingdom.RulingClan;
-                                InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({kingdom.Leader.Name.ToString()}) was not in ruling clan {kingdom.RulingClan.Name.ToString()} (was in {wrongClan.Name.ToString()})", Warn));
+                                if (Main.Settings!.VerboseMessages)
+                                {
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({kingdom.Leader.Name.ToString()}) was not in ruling clan {kingdom.RulingClan.Name.ToString()} (was in {wrongClan.Name.ToString()})", Warn));
+                                }
                             }
 
-                            if (!kingdom.IsEliminated && kingdom.Leader.IsDead)
+                            if (Main.Settings!.PatchDeadLeaderIssues && !kingdom.IsEliminated && kingdom.Leader.IsDead)
                             {
                                 var oldLeader = kingdom.Leader;
                                 ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(kingdom.RulingClan);
-                                InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {kingdom.Leader.Name.ToString()}", Warn));
+                                if (Main.Settings!.VerboseMessages)
+                                {
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {kingdom.Leader.Name.ToString()}", Warn)); 
+                                }
                             }
                         }
 
                         if (kingdom != null && kingdom.RulingClan != null)
                         {
-                            if (kingdom.RulingClan.Kingdom != null && kingdom.RulingClan.Kingdom != kingdom)
+                            if (Main.Settings!.PatchMembershipIssues && kingdom.RulingClan.Kingdom != null && kingdom.RulingClan.Kingdom != kingdom)
                             {
                                 Campaign.Current.KingdomManager.AbdicateTheThrone(kingdom);
                                 if (kingdom.RulingClan.Kingdom != null && kingdom.RulingClan.Kingdom != kingdom)
                                 {
                                     kingdom.RulingClan = CreateClan(kingdom);
                                     DestroyClanAction.Apply(kingdom.RulingClan);
-                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} ruling clan was incorrect. Elected new ruling clan {kingdom.RulingClan.Name.ToString()}", Warn));
+                                    if (Main.Settings!.VerboseMessages)
+                                    {
+                                        InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} ruling clan was incorrect. Elected new ruling clan {kingdom.RulingClan.Name.ToString()}", Warn)); 
+                                    }
                                 }
                             }
                         }
@@ -86,18 +95,24 @@ namespace BannerlordNepotism
                     {
                         if (clan != null && clan.Leader != null)
                         {
-                            if (clan.Leader.Clan != clan)
+                            if (Main.Settings!.PatchMembershipIssues && clan.Leader.Clan != clan)
                             {
                                 var wrongClan = clan.Leader.Clan;
                                 clan.Leader.Clan = clan;
-                                InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({clan.Leader.Name.ToString()}) was not in the clan (was in {wrongClan.Name.ToString()})", Warn));
+                                if (Main.Settings!.VerboseMessages)
+                                {
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({clan.Leader.Name.ToString()}) was not in the clan (was in {wrongClan.Name.ToString()})", Warn)); 
+                                }
                             }
 
-                            if (!clan.IsEliminated && clan.Leader.IsDead)
+                            if (Main.Settings!.PatchDeadLeaderIssues && !clan.IsEliminated && clan.Leader.IsDead)
                             {
                                 var oldLeader = clan.Leader;
                                 ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(clan);
-                                InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {clan.Leader.Name.ToString()}", Warn));
+                                if (Main.Settings!.VerboseMessages)
+                                {
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {clan.Leader.Name.ToString()}", Warn)); 
+                                }
                             }
                         }
                     }
@@ -438,7 +453,6 @@ namespace BannerlordNepotism
             CharacterObject characterObject = culture.LordTemplates.FirstOrDefault<CharacterObject>((CharacterObject x) => x.Occupation == Occupation.Lord);
             Settlement randomElement = kingdom.Settlements.GetRandomElement<Settlement>();
             Hero hero = HeroCreator.CreateSpecialHero(characterObject ?? kingdom.Leader.CharacterObject, randomElement, clan, null, MBRandom.RandomInt(18, 36));
-            hero.HeroDeveloper.DeriveSkillsFromTraits(false, null);
             hero.ChangeState(Hero.CharacterStates.Active);
             clan.SetLeader(hero);
             ChangeKingdomAction.ApplyByJoinToKingdom(clan, kingdom, false);

@@ -72,6 +72,10 @@ namespace BannerlordNepotism
             }
             catch (System.Exception e)
             {
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
                 TaleWorlds.Library.Debug.PrintError(e.Message, e.StackTrace);
                 Debug.WriteDebugLineOnScreen(e.ToString());
                 Debug.SetCrashReportCustomString(e.Message);

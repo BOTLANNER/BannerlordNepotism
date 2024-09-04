@@ -89,5 +89,23 @@ namespace BannerlordNepotism
         [SettingPropertyBool("Patch Family Control", HintText = PatchFamilyControl_Hint, RequireRestart = true, Order = 0, IsToggle = false)]
         [SettingPropertyGroup("Patches", GroupOrder = 99)]
         public bool PatchFamilyControl { get; set; } = true;
+
+        private const string PatchMembershipIssues_Hint = "Patches issues with clan/kingdom leaders not being members of that which they lead or ruling clans not being part of kingdoms that they rule. Can cause compatibility issues with other mods if this is intended. [ Default: ON ]";
+
+        [SettingPropertyBool("Patch Leader Memberships", HintText = PatchMembershipIssues_Hint, RequireRestart = false, Order = 1, IsToggle = false)]
+        [SettingPropertyGroup("Patches", GroupOrder = 99)]
+        public bool PatchMembershipIssues { get; set; } = true;
+
+        private const string PatchDeadLeaderIssues_Hint = "Patches issues with clan/kingdom leaders being dead but still in charge. [ Default: ON ]";
+
+        [SettingPropertyBool("Patch Dead Leaders", HintText = PatchDeadLeaderIssues_Hint, RequireRestart = false, Order = 2, IsToggle = false)]
+        [SettingPropertyGroup("Patches", GroupOrder = 99)]
+        public bool PatchDeadLeaderIssues { get; set; } = true;
+
+        private const string VerboseMessages_Hint = "Display detailed messages when auto-correcting detected problems. [ Default: ON ]";
+
+        [SettingPropertyBool("Detailed Messages", HintText = VerboseMessages_Hint, RequireRestart = false, Order = 0, IsToggle = false)]
+        [SettingPropertyGroup("Messages", GroupOrder = 999)]
+        public bool VerboseMessages { get; set; } = true;
     }
 }

@@ -8,8 +8,8 @@
     },
     "MySetup": {
       "commandName": "Executable",
-      "executablePath": "$(GameFolder)\\bin\\Win64_Shipping_Client\\Bannerlord.exe",
-      "commandLineArgs": "/singleplayer _MODULES_*Bannerlord.Harmony*BetterExceptionWindow*Bannerlord.ButterLib*Bannerlord.UIExtenderEx*Bannerlord.MBOptionScreen*Native*SandBoxCore*CustomBattle*Sandbox*StoryMode*AnotherAchievementModule*AutoTrader*ArrangeMarriageForFamily*BannerColorPersistence*Bannerlord.Diplomacy*BirthAndDeath*CharacterManager*Cheats*DedicatedCustomServerHelper*DismembermentPlus*FamilyControl*FamilyTree*Multiplayer*Nepotism*OpenSourceArmory*OpenSourceSaddlery*OpenSourceWeaponry*RighteousExecutions*SiegeLoadout*TimeLord*WhereTournaments*WhereTournamentsSelectTournamentPrize*WhereTournamentsLockTrackedPrize*zCulturedStart*zzCharacterCreation*_MODULES_",
+      "executablePath": "$(GameFolder)\\bin\\Win64_Shipping_Client\\Bannerlord.BLSE.Standalone.exe",
+      "commandLineArgs": "/singleplayer _MODULES_*Bannerlord.Harmony*BetterExceptionWindow*Bannerlord.ButterLib*Bannerlord.UIExtenderEx*Bannerlord.MBOptionScreen*Native*SandBoxCore*BirthAndDeath*CustomBattle*Sandbox*StoryMode*AnotherAchievementModule*AIPersonalities*AutoTrader*BannerColorPersistence*Bannerlord Cheats Reload*Bannerlord.Diplomacy*BeardsFix*CharacterManager*DeathForAll*DismembermentPlus*ExecutionAdjuster*FamilyControl*NoMoreClones*Nepotism*OpenSourceArmory*OpenSourceSaddlery*OpenSourceWeaponry*RighteousExecutions*SuccessionCrises*SurrenderTweaks*TimeLord*UnlandedClans*WhereTournaments*WhereTournamentsSelectTournamentPrize*WhereTournamentsLockTrackedPrize*zzCharacterCreation*_MODULES_",
       "workingDirectory": "$(GameFolder)\\bin\\Win64_Shipping_Client"
     }
   }
