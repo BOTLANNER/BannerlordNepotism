@@ -8,5 +8,6 @@
         <string id="nepotism_n_02" text="{FAMILY_MEMBER} and {CLAN} has joined {KINGDOM}." />
         <string id="nepotism_n_03" text="{CLAN} has joined {KINGDOM}." />
         <string id="nepotism_n_04" text="{THEIR_KINGDOM} has merged into {KINGDOM}." />
+        <string id="nepotism_n_05" text="{THEIR_KINGDOM} is now ruled by {CLAN}." />
     </strings>
 </base>

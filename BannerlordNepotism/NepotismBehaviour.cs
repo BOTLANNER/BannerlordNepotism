@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Conversation;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -149,6 +151,10 @@ namespace BannerlordNepotism
             if (Main.Settings!.AddMergeKingdoms)
             {
                 AddMergeKingdomDialogs(starter); 
+            }
+            if (Main.Settings!.AddRuleKingdom)
+            {
+                AddRuleKingdomDialogs(starter); 
             }
         }
         #endregion
@@ -438,6 +444,115 @@ namespace BannerlordNepotism
             }
         }
 
+        private void AddRuleKingdomDialogs(CampaignGameStarter starter)
+        {
+            starter.AddPlayerLine("hero_rule_kingdom_ask_nepotism", "hero_main_options", "hero_rule_kingdom_reply_nepotism", "{RULE_KINGDOM_ASK_NEPOTISM}", new ConversationSentence.OnConditionDelegate(RuleKingdomCondition), null, 100, RuleKingdomsClickable, null);
+            starter.AddDialogLine("hero_rule_kingdom_reply_nepotism", "hero_rule_kingdom_reply_nepotism", "close_window", "{RULE_KINGDOM_RESP_NEPOTISM}", new ConversationSentence.OnConditionDelegate(RuleKingdomResponse), new ConversationSentence.OnConsequenceDelegate(RuleKingdomConsequence), 100, null);
+        }
+
+        private bool RuleKingdomsClickable(out TextObject explanation)
+        {
+            Hero mainHero = Hero.MainHero;
+            Hero other = Hero.OneToOneConversationHero;
+
+            if (Main.Settings!.RequireRelationshipToRuleKingdom)
+            {
+                var relationship = other.GetRelationWithPlayer();
+                if (relationship < Main.Settings!.RequiredRelationshipToRuleKingdom)
+                {
+                    explanation = new TextObject("{=nepotism_h_01}Nepotism: Relationship ({RELATION}) is not high enough for success. ({REQUIRED} required)", null);
+                    explanation.SetTextVariable("RELATION", relationship);
+                    explanation.SetTextVariable("REQUIRED", Main.Settings!.RequiredRelationshipToRuleKingdom);
+                    return false;
+                }
+                else
+                {
+                    explanation = new TextObject("{=nepotism_h_02}Nepotism: Relationship ({RELATION}) is high enough for success. ({REQUIRED} required)", null);
+                    explanation.SetTextVariable("RELATION", relationship);
+                    explanation.SetTextVariable("REQUIRED", Main.Settings!.RequiredRelationshipToRuleKingdom);
+                }
+            }
+            else
+            {
+                explanation = null;
+            }
+
+            if (mainHero.Clan.Tier < 4)
+            {
+                explanation = new TextObject("{=nepotism_h_03}Nepotism: Clan Tier ({TIER}) is not high enough. ({REQUIRED} required)", null);
+                explanation.SetTextVariable("TIER", mainHero.Clan.Tier);
+                explanation.SetTextVariable("REQUIRED", 4);
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool RuleKingdomCondition()
+        {
+            Hero mainHero = Hero.MainHero;
+
+            if (mainHero.Clan == null || mainHero.Clan.Kingdom == null)
+            {
+                return false;
+            }
+
+            Hero conversationHero = Hero.OneToOneConversationHero;
+
+            if (conversationHero.Clan == null || conversationHero.Clan.Kingdom == null)
+            {
+                return false;
+            }
+
+            bool isMainHeroFamilyInOtherClan = false;
+            bool isClanleader = conversationHero.Clan != null && conversationHero.Clan.Leader == conversationHero;
+            bool isRulingClan = conversationHero.Clan != null && conversationHero.Clan.Kingdom != null && conversationHero.Clan.Kingdom.RulingClan == conversationHero.Clan;
+            bool isSameKingdom = conversationHero.Clan != null && mainHero.Clan != null && conversationHero.Clan.Kingdom == mainHero.Clan.Kingdom;
+            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero) : mainHero.IsRelatedTo(conversationHero)) && conversationHero.Clan != mainHero.Clan)
+            {
+                isMainHeroFamilyInOtherClan = true;
+            }
+            TextObject textObject = new TextObject("{=nepotism_05}Let {CLAN} rule {THEIR_KINGDOM}, for the family.", null);
+            textObject.SetTextVariable("CLAN", mainHero.Clan!.Name);
+            textObject.SetTextVariable("THEIR_KINGDOM", conversationHero.Clan!.Kingdom!.Name);
+            MBTextManager.SetTextVariable("RULE_KINGDOM_ASK_NEPOTISM", textObject.ToString(), false);
+            return (isMainHeroFamilyInOtherClan && isRulingClan && isClanleader && isSameKingdom);
+        }
+
+        public bool RuleKingdomResponse()
+        {
+            MBTextManager.SetTextVariable("RULE_KINGDOM_RESP_NEPOTISM", (new TextObject("{=nepotism_02}As you wish.", null)).ToString(), false);
+            return true;
+        }
+
+        public void RuleKingdomConsequence()
+        {
+            Hero mainHero = Hero.MainHero;
+            Clan clan = mainHero.Clan;
+
+            Hero conversationHero = Hero.OneToOneConversationHero;
+
+            var kingdom = conversationHero.Clan.Kingdom;
+            Clan rulingClan = kingdom.RulingClan;
+
+
+
+            ChangeRulingClanAction.Apply(kingdom, clan);
+            KingSelectionKingdomDecision kingSelectionKingdomDecision = new PlayerAsKingSelectionKingdomDecision(clan, rulingClan)
+            {
+                IsEnforced = true
+            };
+            kingdom.AddDecision(kingSelectionKingdomDecision, true);
+
+            // Just to be sure.
+            kingdom.RulingClan = mainHero.Clan;
+
+            TextObject message2 = new TextObject("{=nepotism_n_05}{THEIR_KINGDOM} is now ruled by {CLAN}.", null);
+            message2.SetTextVariable("THEIR_KINGDOM", kingdom.Name);
+            message2.SetTextVariable("CLAN", mainHero.Clan.Name);
+            MBInformationManager.AddQuickInformation(message2, 0, null, "");
+        }
+
         private Clan CreateClan(Kingdom? fromKingdom = null)
         {
             Kingdom kingdom = fromKingdom ?? Kingdom.All.GetRandomElement<Kingdom>();
@@ -462,5 +577,18 @@ namespace BannerlordNepotism
         #endregion
     }
 
+    public class PlayerAsKingSelectionKingdomDecision : KingSelectionKingdomDecision
+    {
+        public PlayerAsKingSelectionKingdomDecision(Clan proposerClan, Clan? clanToExclude = null): base(proposerClan,clanToExclude)
+        {
+
+        }
+
+        public override IEnumerable<DecisionOutcome> DetermineInitialCandidates()
+        {
+            yield return new KingSelectionKingdomDecision.KingSelectionDecisionOutcome(Hero.MainHero);
+        }
+
+    }
 
 }

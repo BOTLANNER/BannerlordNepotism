@@ -7,6 +7,7 @@
         <string id="nepotism_01" text="Join our clan, the family needs you." />
         <string id="nepotism_02" text="As you wish." />
         <string id="nepotism_03" text="Join {KINGDOM}, the family needs you." />
-        <string id="nepotism_04" text="We should merge {THEIR_KINGDOM} into {KINGDOM}, for the family." />        
+        <string id="nepotism_04" text="We should merge {THEIR_KINGDOM} into {KINGDOM}, for the family." />
+        <string id="nepotism_05" text="Let {CLAN} rule {THEIR_KINGDOM}, for the family." />
     </strings>
 </base>
