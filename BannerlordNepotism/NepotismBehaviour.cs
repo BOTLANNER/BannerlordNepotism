@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Helpers;
+
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.BarterSystem;
+using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.Conversation;
-using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.MapEvents;
-using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -17,7 +20,7 @@ namespace BannerlordNepotism
     public class NepotismBehaviour : CampaignBehaviorBase
     {
         Color Error = new(178 * 255, 34 * 255, 34 * 255);
-        Color Warn = new (189 * 255, 38 * 255, 0);
+        Color Warn = new(189 * 255, 38 * 255, 0);
 
         #region Overrides
         public override void RegisterEvents()
@@ -59,7 +62,7 @@ namespace BannerlordNepotism
                                 ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(kingdom.RulingClan);
                                 if (Main.Settings!.VerboseMessages)
                                 {
-                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {kingdom.Leader.Name.ToString()}", Warn)); 
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {kingdom.Leader.Name.ToString()}", Warn));
                                 }
                             }
                         }
@@ -71,11 +74,11 @@ namespace BannerlordNepotism
                                 Campaign.Current.KingdomManager.AbdicateTheThrone(kingdom);
                                 if (kingdom.RulingClan.Kingdom != null && kingdom.RulingClan.Kingdom != kingdom)
                                 {
-                                    kingdom.RulingClan = CreateClan(kingdom);
+                                    kingdom.RulingClan = CreateClanAction.Apply(kingdom);
                                     DestroyClanAction.Apply(kingdom.RulingClan);
                                     if (Main.Settings!.VerboseMessages)
                                     {
-                                        InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} ruling clan was incorrect. Elected new ruling clan {kingdom.RulingClan.Name.ToString()}", Warn)); 
+                                        InformationManager.DisplayMessage(new InformationMessage($"FIX: {kingdom.Name.ToString()} ruling clan was incorrect. Elected new ruling clan {kingdom.RulingClan.Name.ToString()}", Warn));
                                     }
                                 }
                             }
@@ -103,7 +106,7 @@ namespace BannerlordNepotism
                                 clan.Leader.Clan = clan;
                                 if (Main.Settings!.VerboseMessages)
                                 {
-                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({clan.Leader.Name.ToString()}) was not in the clan (was in {wrongClan.Name.ToString()})", Warn)); 
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({clan.Leader.Name.ToString()}) was not in the clan (was in {wrongClan.Name.ToString()})", Warn));
                                 }
                             }
 
@@ -113,7 +116,7 @@ namespace BannerlordNepotism
                                 ChangeClanLeaderAction.ApplyWithoutSelectedNewLeader(clan);
                                 if (Main.Settings!.VerboseMessages)
                                 {
-                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {clan.Leader.Name.ToString()}", Warn)); 
+                                    InformationManager.DisplayMessage(new InformationMessage($"FIX: {clan.Name.ToString()} leader ({oldLeader.Name.ToString()}) was dead. Elected new leader {clan.Leader.Name.ToString()}", Warn));
                                 }
                             }
                         }
@@ -142,19 +145,19 @@ namespace BannerlordNepotism
         {
             if (Main.Settings!.AddJoinClan)
             {
-                AddJoinClanDialogs(starter); 
+                AddJoinClanDialogs(starter);
             }
             if (Main.Settings!.AddJoinKingdom)
             {
-                AddJoinKingdomDialogs(starter); 
+                AddJoinKingdomDialogs(starter);
             }
             if (Main.Settings!.AddMergeKingdoms)
             {
-                AddMergeKingdomDialogs(starter); 
+                AddMergeKingdomDialogs(starter);
             }
             if (Main.Settings!.AddRuleKingdom)
             {
-                AddRuleKingdomDialogs(starter); 
+                AddRuleKingdomDialogs(starter);
             }
         }
         #endregion
@@ -201,7 +204,9 @@ namespace BannerlordNepotism
             Hero conversationHero = Hero.OneToOneConversationHero;
             bool isMainHeroFamilyInOtherClan = false;
             bool isClanleader = conversationHero.Clan != null && conversationHero.Clan.Leader == conversationHero;
-            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero) : mainHero.IsRelatedTo(conversationHero)) && conversationHero.Clan != mainHero.Clan)
+
+            bool allowSpouse = Main.Settings?.IncludeByMarriage ?? false;
+            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero, allowSpouse) : mainHero.IsRelatedTo(conversationHero, allowSpouse)) && conversationHero.Clan != mainHero.Clan)
             {
                 isMainHeroFamilyInOtherClan = true;
             }
@@ -264,6 +269,12 @@ namespace BannerlordNepotism
             {
                 explanation = null;
             }
+
+            if (Main.Settings!.RequireBarterToJoinKingdom && !BarterManager.Instance.CanPlayerBarterWithHero(other))
+            {
+                explanation = new TextObject("{=nepotism_h_04}Nepotism: Barter not currently available", null);
+                return false;
+            }
             return true;
         }
 
@@ -287,7 +298,9 @@ namespace BannerlordNepotism
             bool isClanleader = conversationHero.Clan != null && conversationHero.Clan.Leader == conversationHero;
             bool isOtherKingdom = conversationHero.Clan != null && mainHero.Clan != null && conversationHero.Clan.Kingdom != mainHero.Clan.Kingdom;
             bool isNotRulingClan = conversationHero.Clan != null && conversationHero.Clan.Kingdom != null && conversationHero.Clan.Kingdom.RulingClan != conversationHero.Clan;
-            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero) : mainHero.IsRelatedTo(conversationHero)) && conversationHero.Clan != mainHero.Clan)
+
+            bool allowSpouse = Main.Settings?.IncludeByMarriage ?? false;
+            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero, allowSpouse) : mainHero.IsRelatedTo(conversationHero, allowSpouse)) && conversationHero.Clan != mainHero.Clan)
             {
                 isMainHeroFamilyInOtherClan = true;
             }
@@ -307,24 +320,29 @@ namespace BannerlordNepotism
         {
             Hero mainHero = Hero.MainHero;
             Hero conversationHero = Hero.OneToOneConversationHero;
-            if (conversationHero.Occupation != Occupation.Lord)
+
+
+
+            if (Main.Settings!.RequireBarterToJoinKingdom)
             {
-                conversationHero.SetNewOccupation(Occupation.Lord);
-            }
-            if (conversationHero.Clan == null)
-            {
-                conversationHero.Clan = mainHero.Clan;
+
+                PartyBase party;
+                MobileParty partyBelongedTo = conversationHero.PartyBelongedTo;
+                PartyBase mainParty = PartyBase.MainParty;
+                Barterable barterable = new JoinKingdomBarterable(conversationHero, mainHero.Clan.Kingdom);
+                if (partyBelongedTo != null)
+                {
+                    party = partyBelongedTo.Party;
+                }
+                else
+                {
+                    party = null;
+                }
+                BarterManager.Instance.StartBarterOffer(mainHero, conversationHero, mainParty, party, null, null, 0, false, (IEnumerable<Barterable>) (new Barterable[] { barterable }));
             }
             else
             {
-                conversationHero.Clan.ClanLeaveKingdom(false);
-                conversationHero.Clan.Kingdom = mainHero.Clan.Kingdom;
-
-                TextObject message = new TextObject("{=nepotism_n_02}{FAMILY_MEMBER} and {CLAN} has joined {KINGDOM}.", null);
-                message.SetTextVariable("FAMILY_MEMBER", conversationHero.Name);
-                message.SetTextVariable("CLAN", conversationHero.Clan.Name);
-                message.SetTextVariable("KINGDOM", mainHero.Clan.Kingdom.Name);
-                MBInformationManager.AddQuickInformation(message, 0, conversationHero.CharacterObject, "");
+                new JoinKingdomBarterable(conversationHero, mainHero.Clan.Kingdom).Apply();
             }
         }
 
@@ -360,6 +378,12 @@ namespace BannerlordNepotism
             {
                 explanation = null;
             }
+
+            if (Main.Settings!.RequireBarterToMergeKingdoms && !BarterManager.Instance.CanPlayerBarterWithHero(other))
+            {
+                explanation = new TextObject("{=nepotism_h_04}Nepotism: Barter not currently available", null);
+                return false;
+            }
             return true;
         }
 
@@ -383,7 +407,9 @@ namespace BannerlordNepotism
             bool isClanleader = conversationHero.Clan != null && conversationHero.Clan.Leader == conversationHero;
             bool isRulingClan = conversationHero.Clan != null && conversationHero.Clan.Kingdom != null && conversationHero.Clan.Kingdom.RulingClan == conversationHero.Clan;
             bool isOtherKingdom = conversationHero.Clan != null && mainHero.Clan != null && conversationHero.Clan.Kingdom != mainHero.Clan.Kingdom;
-            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero) : mainHero.IsRelatedTo(conversationHero)) && conversationHero.Clan != mainHero.Clan)
+
+            bool allowSpouse = Main.Settings?.IncludeByMarriage ?? false;
+            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero, allowSpouse) : mainHero.IsRelatedTo(conversationHero, allowSpouse)) && conversationHero.Clan != mainHero.Clan)
             {
                 isMainHeroFamilyInOtherClan = true;
             }
@@ -403,44 +429,33 @@ namespace BannerlordNepotism
         public void MergeKingdomConsequence()
         {
             Hero mainHero = Hero.MainHero;
-            Hero conversationHero = Hero.OneToOneConversationHero;
+            Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 
-            var oldKingdom = conversationHero.Clan.Kingdom;
+            var oldKingdom = oneToOneConversationHero.Clan.Kingdom;
             var currentClan = oldKingdom.RulingClan;
-            
-            var clans = oldKingdom.Clans.ToList();
-            foreach (var clan in clans)
+
+
+
+            if (Main.Settings!.RequireBarterToMergeKingdoms)
             {
-                if (clan.IsClanTypeMercenary)
+
+                PartyBase party;
+                MobileParty partyBelongedTo = oneToOneConversationHero.PartyBelongedTo;
+                PartyBase mainParty = PartyBase.MainParty;
+                Barterable kingdomBarterable = new MergeKingdomBarterable(oneToOneConversationHero, partyBelongedTo?.Party);
+                if (partyBelongedTo != null)
                 {
-                    ChangeKingdomAction.ApplyByLeaveKingdomAsMercenary(clan, false);
+                    party = partyBelongedTo.Party;
                 }
                 else
                 {
-                    //clan.ClanLeaveKingdom(false);
-                    //clan.Kingdom = mainHero.Clan.Kingdom;
-                    ChangeKingdomAction.ApplyByJoinToKingdom(clan, mainHero.Clan.Kingdom, false);
-
-                    TextObject message = new TextObject("{=nepotism_n_03}{CLAN} has joined {KINGDOM}.", null);
-                    message.SetTextVariable("CLAN", clan.Name);
-                    message.SetTextVariable("KINGDOM", mainHero.Clan.Kingdom.Name);
-                    MBInformationManager.AddQuickInformation(message, 0, null, "");
+                    party = null;
                 }
-
+                BarterManager.Instance.StartBarterOffer(mainHero, oneToOneConversationHero, mainParty, party, null, null, 0, false, (IEnumerable<Barterable>) (new Barterable[] { kingdomBarterable }));
             }
-            Campaign.Current.KingdomManager.AbdicateTheThrone(oldKingdom);
-            ChangeKingdomAction.ApplyByJoinToKingdom(currentClan, mainHero.Clan.Kingdom, false);
-            oldKingdom.RulingClan = CreateClan(oldKingdom);
-            DestroyClanAction.Apply(oldKingdom.RulingClan);
-
-            TextObject message2 = new TextObject("{=nepotism_n_04}{THEIR_KINGDOM} has merged into {KINGDOM}.", null);
-            message2.SetTextVariable("THEIR_KINGDOM", oldKingdom.Name);
-            message2.SetTextVariable("KINGDOM", mainHero.Clan.Kingdom.Name);
-            MBInformationManager.AddQuickInformation(message2, 0, null, "");
-
-            if (!oldKingdom.IsEliminated)
+            else
             {
-                DestroyKingdomAction.Apply(oldKingdom); 
+                MergeKingdomAction.Apply(oldKingdom, mainHero);
             }
         }
 
@@ -485,6 +500,12 @@ namespace BannerlordNepotism
                 return false;
             }
 
+            if (Main.Settings!.RequireBarterToRuleKingdom && !BarterManager.Instance.CanPlayerBarterWithHero(other))
+            {
+                explanation = new TextObject("{=nepotism_h_04}Nepotism: Barter not currently available", null);
+                return false;
+            }
+
             return true;
         }
 
@@ -508,7 +529,9 @@ namespace BannerlordNepotism
             bool isClanleader = conversationHero.Clan != null && conversationHero.Clan.Leader == conversationHero;
             bool isRulingClan = conversationHero.Clan != null && conversationHero.Clan.Kingdom != null && conversationHero.Clan.Kingdom.RulingClan == conversationHero.Clan;
             bool isSameKingdom = conversationHero.Clan != null && mainHero.Clan != null && conversationHero.Clan.Kingdom == mainHero.Clan.Kingdom;
-            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero) : mainHero.IsRelatedTo(conversationHero)) && conversationHero.Clan != mainHero.Clan)
+
+            bool allowSpouse = Main.Settings?.IncludeByMarriage ?? false;
+            if ((Main.Settings!.DirectFamilyOnly ? mainHero.IsFamilyOf(conversationHero, allowSpouse) : mainHero.IsRelatedTo(conversationHero, allowSpouse)) && conversationHero.Clan != mainHero.Clan)
             {
                 isMainHeroFamilyInOtherClan = true;
             }
@@ -530,65 +553,32 @@ namespace BannerlordNepotism
             Hero mainHero = Hero.MainHero;
             Clan clan = mainHero.Clan;
 
-            Hero conversationHero = Hero.OneToOneConversationHero;
+            Hero oneToOneConversationHero = Hero.OneToOneConversationHero;
 
-            var kingdom = conversationHero.Clan.Kingdom;
+            var kingdom = oneToOneConversationHero.Clan.Kingdom;
             Clan rulingClan = kingdom.RulingClan;
 
-
-
-            ChangeRulingClanAction.Apply(kingdom, clan);
-            KingSelectionKingdomDecision kingSelectionKingdomDecision = new PlayerAsKingSelectionKingdomDecision(clan, rulingClan)
+            if (Main.Settings!.RequireBarterToRuleKingdom)
             {
-                IsEnforced = true
-            };
-            kingdom.AddDecision(kingSelectionKingdomDecision, true);
-
-            // Just to be sure.
-            kingdom.RulingClan = mainHero.Clan;
-
-            TextObject message2 = new TextObject("{=nepotism_n_05}{THEIR_KINGDOM} is now ruled by {CLAN}.", null);
-            message2.SetTextVariable("THEIR_KINGDOM", kingdom.Name);
-            message2.SetTextVariable("CLAN", mainHero.Clan.Name);
-            MBInformationManager.AddQuickInformation(message2, 0, null, "");
-        }
-
-        private Clan CreateClan(Kingdom? fromKingdom = null)
-        {
-            Kingdom kingdom = fromKingdom ?? Kingdom.All.GetRandomElement<Kingdom>();
-            CultureObject culture = kingdom.Culture;
-            Settlement settlement = kingdom.Settlements.FirstOrDefault<Settlement>((Settlement x) => x.IsTown) ?? kingdom.Settlements.GetRandomElement<Settlement>();
-            TextObject textObject = NameGenerator.Current.GenerateClanName(culture, settlement);
-            Clan clan = Clan.CreateClan($"no_clan_{Clan.All.Count}");
-            TextObject textObject1 = new TextObject("{=!}informal", null);
-            CultureObject cultureObject = Kingdom.All.GetRandomElement<Kingdom>().Culture;
-            Banner banner = Banner.CreateRandomClanBanner(-1);
-            Vec2 vec2 = new Vec2();
-            clan.InitializeClan(textObject, textObject1, cultureObject, banner, vec2, false);
-            CharacterObject characterObject = culture.LordTemplates.FirstOrDefault<CharacterObject>((CharacterObject x) => x.Occupation == Occupation.Lord);
-            Settlement randomElement = kingdom.Settlements.GetRandomElement<Settlement>();
-            Hero hero = HeroCreator.CreateSpecialHero(characterObject ?? kingdom.Leader.CharacterObject, randomElement, clan, null, MBRandom.RandomInt(18, 36));
-            hero.ChangeState(Hero.CharacterStates.Active);
-            clan.SetLeader(hero);
-            ChangeKingdomAction.ApplyByJoinToKingdom(clan, kingdom, false);
-
-            return clan;
+                PartyBase party;
+                MobileParty partyBelongedTo = oneToOneConversationHero.PartyBelongedTo;
+                PartyBase mainParty = PartyBase.MainParty;
+                Barterable kingdomBarterable = new RuleKingdomBarterable(oneToOneConversationHero, partyBelongedTo?.Party);
+                if (partyBelongedTo != null)
+                {
+                    party = partyBelongedTo.Party;
+                }
+                else
+                {
+                    party = null;
+                }
+                BarterManager.Instance.StartBarterOffer(mainHero, oneToOneConversationHero, mainParty, party, null, null, 0, false, (IEnumerable<Barterable>) (new Barterable[] { kingdomBarterable }));
+            }
+            else
+            {
+                RuleKingdomAction.Apply(kingdom, mainHero);
+            }
         }
         #endregion
     }
-
-    public class PlayerAsKingSelectionKingdomDecision : KingSelectionKingdomDecision
-    {
-        public PlayerAsKingSelectionKingdomDecision(Clan proposerClan, Clan? clanToExclude = null): base(proposerClan,clanToExclude)
-        {
-
-        }
-
-        public override IEnumerable<DecisionOutcome> DetermineInitialCandidates()
-        {
-            yield return new KingSelectionKingdomDecision.KingSelectionDecisionOutcome(Hero.MainHero);
-        }
-
-    }
-
 }

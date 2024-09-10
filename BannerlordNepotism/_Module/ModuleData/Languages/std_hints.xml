@@ -7,5 +7,6 @@
         <string id="nepotism_h_01" text="Nepotism: Relationship ({RELATION}) is not high enough for success. ({REQUIRED} required)" />
         <string id="nepotism_h_02" text="Nepotism: Relationship ({RELATION}) is high enough for success. ({REQUIRED} required)" />
         <string id="nepotism_h_03" text="Nepotism: Clan Tier ({TIER}) is not high enough. ({REQUIRED} required)" />
+        <string id="nepotism_h_04" text="Nepotism: Barter not currently available" />
     </strings>
 </base>

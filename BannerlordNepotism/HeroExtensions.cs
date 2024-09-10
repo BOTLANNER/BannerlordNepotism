@@ -7,14 +7,14 @@ namespace BannerlordNepotism
 {
     public static class HeroExtensions
     {
-        public static List<Hero> Relatives(this Hero hero)
+        public static List<Hero> Relatives(this Hero hero, bool allowSpouse = false)
         {
             var foundRelatives = new List<Hero>();
-            hero.AllFamilyInternal(ref foundRelatives);
+            hero.AllFamilyInternal(ref foundRelatives, allowSpouse);
             return foundRelatives;
         }
 
-        private static void AllFamilyInternal(this Hero hero,ref List<Hero> foundRelatives)
+        private static void AllFamilyInternal(this Hero hero,ref List<Hero> foundRelatives, bool allowSpouse = false)
         {
             if (hero.Children != null && hero.Children.Count > 0)
             {
@@ -25,7 +25,7 @@ namespace BannerlordNepotism
                         continue;
                     }
                     foundRelatives.Add(child);
-                    child.AllFamilyInternal(ref foundRelatives);
+                    child.AllFamilyInternal(ref foundRelatives, allowSpouse);
 
                 }
             }
@@ -38,7 +38,7 @@ namespace BannerlordNepotism
                         continue;
                     }
                     foundRelatives.Add(sibling);
-                    sibling.AllFamilyInternal(ref foundRelatives);
+                    sibling.AllFamilyInternal(ref foundRelatives, allowSpouse);
 
                 }
             }
@@ -46,21 +46,26 @@ namespace BannerlordNepotism
             if (hero.Mother != null && hero.Mother != hero && !foundRelatives.Contains(hero.Mother))
             {
                 foundRelatives.Add(hero.Mother);
-                hero.Mother.AllFamilyInternal(ref foundRelatives);
+                hero.Mother.AllFamilyInternal(ref foundRelatives, allowSpouse);
             }
             if (hero.Father != null && hero.Father != hero && !foundRelatives.Contains(hero.Father))
             {
                 foundRelatives.Add(hero.Father);
-                hero.Father.AllFamilyInternal(ref foundRelatives);
+                hero.Father.AllFamilyInternal(ref foundRelatives, allowSpouse);
+            }
+            if (allowSpouse && hero.Spouse != null && hero.Spouse != hero && !foundRelatives.Contains(hero.Spouse))
+            {
+                foundRelatives.Add(hero.Spouse);
+                hero.Spouse.AllFamilyInternal(ref foundRelatives, allowSpouse);
             }
         }
 
-        public static bool IsRelatedTo(this Hero hero,Hero other)
+        public static bool IsRelatedTo(this Hero hero,Hero other, bool allowSpouse = true)
         {
-            return hero.Relatives().Contains(other);
+            return hero.Relatives(allowSpouse).Contains(other);
         }
 
-        public static bool IsFamilyOf(this Hero current, Hero other)
+        public static bool IsFamilyOf(this Hero current, Hero other, bool allowSpouse = true)
         {
             bool flag;
             foreach (Hero child in current.Children)
@@ -106,6 +111,11 @@ namespace BannerlordNepotism
         Label1:
             if (current.Mother != null)
             {
+                if (other == current.Mother)
+                {
+                    flag = true;
+                    return flag;
+                }
                 foreach (Hero uncle in current.Mother.Siblings)
                 {
                     if (other == uncle)
@@ -117,9 +127,25 @@ namespace BannerlordNepotism
             }
             if (current.Father != null)
             {
+                if (other == current.Father)
+                {
+                    flag = true;
+                    return flag;
+                }
                 foreach (Hero uncle in current.Father.Siblings)
                 {
                     if (other == uncle)
+                    {
+                        flag = true;
+                        return flag;
+                    }
+                }
+            }
+            if (allowSpouse)
+            {
+                if (current.Spouse != null)
+                {
+                    if (other == current.Spouse)
                     {
                         flag = true;
                         return flag;
