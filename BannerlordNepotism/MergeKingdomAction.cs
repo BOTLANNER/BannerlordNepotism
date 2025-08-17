@@ -40,14 +40,24 @@ namespace BannerlordNepotism
             }
             Campaign.Current.KingdomManager.AbdicateTheThrone(oldKingdom);
             ChangeKingdomAction.ApplyByJoinToKingdom(currentClan, newRuler.Clan.Kingdom, false);
-            oldKingdom.RulingClan = CreateClanAction.Apply(oldKingdom);
-            DestroyClanAction.Apply(oldKingdom.RulingClan);
+
+            TextObject message3 = new TextObject("{=nepotism_n_03}{CLAN} has abdicated {KINGDOM}.", null);
+            message3.SetTextVariable("CLAN", oldKingdom.RulingClan.Name);
+            message3.SetTextVariable("KINGDOM", oldKingdom.Name);
+            MBInformationManager.AddQuickInformation(message3, 0, null, "");
+
+            //oldKingdom.RulingClan = CreateClanAction.Apply(oldKingdom);
+            //DestroyClanAction.Apply(oldKingdom.RulingClan);
 
             MBInformationManager.AddQuickInformation(message2, 0, null, "");
 
             if (!oldKingdom.IsEliminated)
             {
                 DestroyKingdomAction.Apply(oldKingdom);
+
+                TextObject message4 = new TextObject("{=nepotism_n_03}Kingdom {KINGDOM} has been destroyed.", null);
+                message4.SetTextVariable("KINGDOM", oldKingdom.Name);
+                MBInformationManager.AddQuickInformation(message4, 0, null, "");
             }
 
             if (newRuler == Hero.MainHero && PlayerEncounter.Current != null)
