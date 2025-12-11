@@ -29,21 +29,21 @@ namespace BannerlordNepotism
                 {
                     //clan.ClanLeaveKingdom(false);
                     //clan.Kingdom = mainHero.Clan.Kingdom;
-                    ChangeKingdomAction.ApplyByJoinToKingdom(clan, newRuler.Clan.Kingdom, false);
+                    ChangeKingdomAction.ApplyByJoinToKingdom(clan, newRuler.Clan.Kingdom, showNotification: false);
 
                     TextObject message = new TextObject("{=nepotism_n_03}{CLAN} has joined {KINGDOM}.", null);
                     message.SetTextVariable("CLAN", clan.Name);
                     message.SetTextVariable("KINGDOM", newRuler.Clan.Kingdom.Name);
-                    MBInformationManager.AddQuickInformation(message, 0, null, "");
+                    MBInformationManager.AddQuickInformation(message, 0, null);
                 }
 
             }
             Campaign.Current.KingdomManager.AbdicateTheThrone(oldKingdom);
-            ChangeKingdomAction.ApplyByJoinToKingdom(currentClan, newRuler.Clan.Kingdom, false);
+            ChangeKingdomAction.ApplyByJoinToKingdom(currentClan, newRuler.Clan.Kingdom, showNotification: false);
             oldKingdom.RulingClan = CreateClanAction.Apply(oldKingdom);
             DestroyClanAction.Apply(oldKingdom.RulingClan);
 
-            MBInformationManager.AddQuickInformation(message2, 0, null, "");
+            MBInformationManager.AddQuickInformation(message2, 0, null);
 
             if (!oldKingdom.IsEliminated)
             {

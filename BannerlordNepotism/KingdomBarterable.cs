@@ -3,6 +3,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.BarterSystem.Barterables;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -77,10 +78,10 @@ namespace BannerlordNepotism
         {
             if (OriginalOwner?.Clan?.Kingdom?.Banner != null)
             {
-                return new ImageIdentifier(OriginalOwner.Clan.Kingdom.Banner);
+                return new BannerImageIdentifier(OriginalOwner.Clan.Kingdom.Banner);
             }
 
-            return new ImageIdentifier(CharacterCode.CreateFrom(this.OriginalOwner!.CharacterObject));
+            return new CharacterImageIdentifier(CharacterCode.CreateFrom(this.OriginalOwner!.CharacterObject));
         }
 
         public override void CheckBarterLink(Barterable linkedBarterable)

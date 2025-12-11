@@ -28,7 +28,7 @@ namespace BannerlordNepotism
             TextObject message2 = new TextObject("{=nepotism_n_05}{THEIR_KINGDOM} is now ruled by {CLAN}.", null);
             message2.SetTextVariable("THEIR_KINGDOM", kingdom.Name);
             message2.SetTextVariable("CLAN", newRuler.Clan.Name);
-            MBInformationManager.AddQuickInformation(message2, 0, null, "");
+            MBInformationManager.AddQuickInformation(message2, 0, null);
 
 
 

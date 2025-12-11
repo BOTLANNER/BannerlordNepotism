@@ -1,20 +1,25 @@
 ﻿<Module>
   <Name value="Nepotism"/>
   <Id value="Nepotism"/>
-  <Version value="v3.0.0"/>
+  <Version value="v4.0.0"/>
   <Url value="https://www.nexusmods.com/mountandblade2bannerlord/mods/4677" />
   <SingleplayerModule value="true"/>
   <MultiplayerModule value="false"/>
   <Official value="false"/>
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community" />
+  <UpdateInfo value="NexusMods:4677" />
   <DependedModules>
-    <DependedModule Id="Bannerlord.MBOptionScreen" />
+    <DependedModule Id="Bannerlord.MBOptionScreen" DependentVersion="v5.11.3" />
     <DependedModule Id="Native"/>
     <DependedModule Id="SandBoxCore"/>
     <DependedModule Id="Sandbox"/>
     <DependedModule Id="StoryMode" />
   </DependedModules>
   <DependedModuleMetadatas>
-    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v4.7.11" />
+    <DependedModuleMetadata id="Bannerlord.Harmony" order="LoadBeforeThis" version="v2.4.2"  optional="true"  />
+    <DependedModuleMetadata id="Bannerlord.MBOptionScreen" order="LoadBeforeThis" version="v5.11.3" />
     <DependedModuleMetadata id="Native" order="LoadBeforeThis" version="1.0.0.*" />
     <DependedModuleMetadata id="SandBoxCore" order="LoadBeforeThis" version="1.0.0.*" />
     <DependedModuleMetadata id="Sandbox" order="LoadBeforeThis" version="1.0.0.*" />

@@ -22,13 +22,19 @@ namespace BannerlordNepotism
             CultureObject cultureObject = Kingdom.All.GetRandomElement<Kingdom>().Culture;
             Banner banner = Banner.CreateRandomClanBanner(-1);
             Vec2 vec2 = new Vec2();
-            clan.InitializeClan(textObject, textObject1, cultureObject, banner, vec2, false);
+
+            clan.ChangeClanName(textObject, textObject);
+            clan.Culture = cultureObject;
+            clan.Banner = banner;
+            clan.SetInitialHomeSettlement(settlement);
+
+            //clan.InitializeClan(textObject, textObject1, cultureObject, banner, vec2, false);
             CharacterObject characterObject = culture.LordTemplates.FirstOrDefault<CharacterObject>((CharacterObject x) => x.Occupation == Occupation.Lord);
             Settlement randomElement = kingdom.Settlements.GetRandomElement<Settlement>();
             Hero hero = HeroCreator.CreateSpecialHero(characterObject ?? kingdom.Leader.CharacterObject, randomElement, clan, null, MBRandom.RandomInt(18, 36));
             hero.ChangeState(Hero.CharacterStates.Active);
             clan.SetLeader(hero);
-            ChangeKingdomAction.ApplyByJoinToKingdom(clan, kingdom, false);
+            ChangeKingdomAction.ApplyByJoinToKingdom(clan, kingdom, showNotification: false);
 
             return clan;
         }

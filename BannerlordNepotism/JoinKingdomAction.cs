@@ -27,7 +27,7 @@ namespace BannerlordNepotism
                 message.SetTextVariable("FAMILY_MEMBER", newMember.Name);
                 message.SetTextVariable("CLAN", newMember.Clan.Name);
                 message.SetTextVariable("KINGDOM", kingdom.Name);
-                MBInformationManager.AddQuickInformation(message, 0, newMember.CharacterObject, "");
+                MBInformationManager.AddQuickInformation(message, 0, newMember.CharacterObject);
             }
 
             if (kingdom.Leader == Hero.MainHero && PlayerEncounter.Current != null)

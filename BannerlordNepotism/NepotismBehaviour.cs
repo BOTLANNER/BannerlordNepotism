@@ -234,7 +234,7 @@ namespace BannerlordNepotism
             TextObject message = new TextObject("{=nepotism_n_01}{FAMILY_MEMBER} has joined {CLAN}.", null);
             message.SetTextVariable("FAMILY_MEMBER", conversationHero.Name);
             message.SetTextVariable("CLAN", mainHero.Clan.Name);
-            MBInformationManager.AddQuickInformation(message, 0, conversationHero.CharacterObject, "");
+            MBInformationManager.AddQuickInformation(message, 0, conversationHero.CharacterObject);
         }
 
         private void AddJoinKingdomDialogs(CampaignGameStarter starter)
