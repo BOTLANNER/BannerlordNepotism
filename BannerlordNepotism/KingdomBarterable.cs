@@ -71,6 +71,9 @@ namespace BannerlordNepotism
             //}
 
             float v = OriginalOwner.Clan.CalculateTotalSettlementValueForFaction(OriginalOwner.Clan.Kingdom);
+
+            v *= Main.Settings!.BarterDifficulty;
+
             return (int) -v / 30;
         }
 

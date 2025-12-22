@@ -130,6 +130,12 @@ namespace BannerlordNepotism
         [SettingPropertyGroup("Requirements Settings")]
         public bool RequireBarterToRuleKingdom { get; set; } = true;
 
+        private const string BarterDifficulty_Hint = "Difficulty for barters. Higher difficulty will require larger amounts, lower difficulty is less expensive. [ Default: 0.99 ]";
+
+        [SettingPropertyFloatingInteger("Barter Difficulty", 0.01f, 2.00f, "0.00", HintText = BarterDifficulty_Hint, RequireRestart = false, Order = 11)]
+        [SettingPropertyGroup("Requirements Settings")]
+        public float BarterDifficulty { get; set; } = 0.99f;
+
 
         private const string PatchFamilyControl_Hint = "Patches Family Control mod if found to prevent duplicate dialogs for joining player clan. [ Default: ON ]";
 
